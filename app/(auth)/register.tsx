@@ -1,11 +1,27 @@
 import CustomTextInput from "@/components/CustomTextInput";
 import PrimaryButton from "@/components/PrimaryButton";
-import { Link, router } from "expo-router";
-import { View, Text, Image, Pressable, ScrollView } from "react-native";
+import useAuthStore from "@/services/stores/authStore";
+import { Link } from "expo-router";
+import { useState } from "react";
+import { View, Text, Image, ScrollView } from "react-native";
 
 export default function Register() {
+  const register = useAuthStore((state) => state.register);
+  const isSigningup = useAuthStore((state) => state.isSigningup);
+  const errorMessage = useAuthStore((state) => state.errorMessage);
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
   function handleRegister() {
-    router.push("/");
+    register(
+      formData.username,
+      formData.password,
+      formData.name,
+      formData.email
+    );
   }
   return (
     <ScrollView
@@ -44,18 +60,43 @@ export default function Register() {
 
       {/* Form */}
       <View className="w-full gap-7 p-6">
-        <CustomTextInput placeholder="Name" />
-        <CustomTextInput placeholder="Email" keyboardType="email-address" />
+        <CustomTextInput
+          placeholder="Name"
+          value={formData.name}
+          onChangeText={(text) => setFormData({ ...formData, name: text })}
+        />
+        <CustomTextInput
+          placeholder="username"
+          value={formData.username}
+          onChangeText={(text) => setFormData({ ...formData, username: text })}
+        />
+        <CustomTextInput
+          placeholder="Email"
+          keyboardType="email-address"
+          value={formData.email}
+          onChangeText={(text) => setFormData({ ...formData, email: text })}
+        />
         <CustomTextInput
           placeholder="Password"
-          keyboardType="visible-password"
+          // keyboardType="visible-password"
+          secureText={true}
+          value={formData.password}
+          onChangeText={(text) => setFormData({ ...formData, password: text })}
         />
+
+        {errorMessage && (
+          <Text className="text-red-500 text-center">{errorMessage}</Text>
+        )}
 
         <Text className="font-poppinsSemiBold text-primary self-end">
           Forgot your password?
         </Text>
 
-        <PrimaryButton title="Sign up" />
+        <PrimaryButton
+          title="Sign up"
+          onPress={handleRegister}
+          disabled={isSigningup}
+        />
 
         <Link href={"/login"} replace className="z-10">
           <Text className="text-center font-poppinsSemiBold text-textSecondary">

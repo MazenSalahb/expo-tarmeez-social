@@ -1,9 +1,23 @@
 import CustomTextInput from "@/components/CustomTextInput";
 import PrimaryButton from "@/components/PrimaryButton";
+import useAuthStore from "@/services/stores/authStore";
 import { Link } from "expo-router";
-import { View, Text, Image, Pressable, ScrollView } from "react-native";
+import { useState } from "react";
+import { View, Text, Image, ScrollView } from "react-native";
 
 export default function Login() {
+  const login = useAuthStore((state) => state.login);
+  const isLoginIn = useAuthStore((state) => state.isLoginIn);
+  const errorMessage = useAuthStore((state) => state.errorMessage);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+
+  function handleLogin() {
+    login(formData.username, formData.password);
+  }
+
   return (
     <ScrollView
       className="bg-white"
@@ -41,17 +55,33 @@ export default function Login() {
 
       {/* Form */}
       <View className="w-full gap-7 p-6">
-        <CustomTextInput placeholder="Email" keyboardType="email-address" />
+        <CustomTextInput
+          placeholder="Username"
+          value={formData.username}
+          onChangeText={(text) => setFormData({ ...formData, username: text })}
+        />
         <CustomTextInput
           placeholder="Password"
-          keyboardType="visible-password"
+          secureText={true}
+          value={formData.password}
+          onChangeText={(text) => setFormData({ ...formData, password: text })}
         />
+
+        {errorMessage && (
+          <Text className="font-poppinsSemiBold text-center text-red-500">
+            {errorMessage}
+          </Text>
+        )}
 
         <Text className="font-poppinsSemiBold text-primary self-end">
           Forgot your password?
         </Text>
 
-        <PrimaryButton title="Sign in" />
+        <PrimaryButton
+          title="Sign in"
+          onPress={handleLogin}
+          disabled={isLoginIn}
+        />
 
         <Link href={"/register"} replace className="z-10">
           <Text className="text-center font-poppinsSemiBold text-textSecondary">

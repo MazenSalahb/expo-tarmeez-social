@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import "../global.css";
 import {
@@ -23,8 +23,11 @@ import {
   Poppins_900Black_Italic,
 } from "@expo-google-fonts/poppins";
 import { useEffect } from "react";
+import useAuthStore from "@/services/stores/authStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -47,17 +50,35 @@ export default function RootLayout() {
     Poppins_900Black,
     Poppins_900Black_Italic,
   });
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isCheckingAuth = useAuthStore((state) => state.isCheckingAuth);
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hide();
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (fontsLoaded && !isCheckingAuth) {
+      if (token) {
+        router.replace("/home");
+
+        setTimeout(() => {
+          SplashScreen.hide();
+        }, 2000);
+      } else {
+        SplashScreen.hide();
+      }
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, isCheckingAuth, token]);
 
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-    </Stack>
+    <QueryClientProvider client={queryClient}>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(main)" options={{ headerShown: false }} />
+      </Stack>
+    </QueryClientProvider>
   );
 }
